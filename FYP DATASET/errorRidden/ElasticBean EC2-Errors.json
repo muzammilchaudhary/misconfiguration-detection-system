@@ -1,0 +1,112 @@
+{
+    "AWSTemplateFormatVersion": "3010-09-09", //Logical Error
+    "Resources": {
+        "sampleApplication": {
+            "Type": "AWS::ElasticBeanstalk::Application",
+            "Properties": {
+                "Description": "AWS Elastic Beanstalk Sample Application"
+            }
+        },
+        "sampleApplicationVersion": {
+            "Type": "AWS::ElasticBeanstalk::ApplicationVersion",
+            "Properties": {
+                "ApplicationName': { //Syntax Error
+                    "Ref": "sampleApplication"
+                },
+                "Description": "AWS ElasticBeanstalk Sample Application Version",
+                "SourceBundle": {
+                    "S3Bucket": {
+                        "Fn::Sub": "elasticbeanstalk-samples-${AWS::Region}"
+                    },
+                    "S3Key": "php-newsample-app.zip"
+                }
+            }
+        },
+        "sampleConfigurationTemplate": {
+            "Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",, //Syntax Error
+            "Properties": {
+                "ApplicationName": {
+                    "Ref": "sampleApplication"
+                },
+                "Description": "AWS ElasticBeanstalk Sample Configuration Template",
+                "OptionSettings": [
+                    {
+                        "Namespace": "aws:autoscaling:asg",
+                        "OptionName": "MinSize",
+                        "Value": "7" //Logical Error
+                    },
+                    {
+                        "Namespace": "aws:autoscaling:asg",
+                        "OptionName": "MaxSize",
+                        "Value": "6"
+                    },
+                    {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "LoadBalanced"
+                    },
+                    {
+                        "Namespace": "aws:autoscaling:launchconfiguration",
+                        "OptionName": "IamInstanceProfile",
+                        "Value": {
+                            "Ref": "MyInstanceProfile"
+                        }
+                    }
+                ],
+                "SolutionStackName": "solution-stack"
+            }
+        },
+        "sampleEnvironment": {
+            "Type": "AWS::ElasticBeanstalk::Environment",
+            "Properties": {
+                "ApplicationName": {
+                    "Ref": "sampleApplication"
+                },
+                "Description": "AWS ElasticBeanstalk Sample Environment",
+                "TemplateName": {
+                    "Ref": "sampleConfigurationTemplate" >> //Syntax Error
+                },
+                "VersionLabel": {
+                    "Ref": "sampleApplicationVersion"
+                }
+            }
+        },
+        "MyInstanceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version", "2012-10-17": //Syntax Error
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Description": "Beanstalk EC2 role",
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier",
+                    "arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker",
+                    "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier"
+                ]
+            }
+        },
+        "MyInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Roles": [[ //Syntax Error
+                    {
+                        "Ref": "MyInstanceRole"
+                    }
+                ]
+            }
+        }
+    }
+}

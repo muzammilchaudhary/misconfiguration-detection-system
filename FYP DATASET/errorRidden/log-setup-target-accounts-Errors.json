@@ -1,0 +1,136 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "EventBridge Rule to send CloudFormation events to a central EventBus",
+    "Parameters": {
+        "CentralEventBusArn": {
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "CloudFormationEventRule": {
+            "Type": "AWS::Events::Rule",
+            "Metadata": {
+                "Comment": "Send all cloudformation events to the central event bus"
+            },
+            "Properties": {
+                "Name": "CloudFormationEventRule",
+                "EventBusName": {
+                    "Fn::Sub": "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/default"
+                },
+                "EventPattern": {
+                    "source": [
+                        "aws.cloudformation"
+                    ]
+                },
+                "State": "2012-10-17", //Logical Error
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Ref": "CentralEventBusArn"
+                        },
+                        "RoleArn": {
+                            "Fn::GetAtt": [
+                                "EventBridgeRole",
+                                "Arn"
+                            ]
+                        },
+                        "Id": "CentralEventBus",
+                        //Adding a comment //Syntax Error
+                        "DeadLetterConfig": {
+                            "Arn": {
+                                "Fn::GetAtt": [
+                                    "DeadLetterQueue",
+                                    "Arn"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "DeadLetterQueue": {
+            "Type": "AWS::SQS::Queue" //Syntax Error
+            "Properties": {
+                "QueueName": "CloudFormation-Logs-DLQ"
+            }
+        },
+        "DeadLetterQueuePolicy": {
+            "Type": "AWS::SQS::QueuePolicy",
+            "Properties": {
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Id": "AllowEventBridgeToWriteLogs",
+                    "Statement": [
+                        {
+                            "Sid": "AllowEventBridgeToWriteLogs",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": true //Logical Error
+                            },
+                            "Action": "sqs:SendMessage",
+                            "Resource": {
+                                "Fn::GetAtt": [
+                                    "DeadLetterQueue",
+                                    "Arn"
+                                ]
+                            },
+                            "Condition": {
+                                "ArnLike":: { //Syntax Error
+                                    "aws:SourceArn": {
+                                        "Fn::Sub": "arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/CloudFormationEventRule"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "Queues": [
+                    {
+                        "Ref": "NonExistentQueue" //Logical Error
+                    }
+                ]
+            }
+        },
+        "EventBridgeRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17"; //Syntax Error
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "events.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                }
+            }
+        },
+        "EventBridgeRolePolicy": {
+            "Type": "AWS::IAM::RolePolicy",
+            "Metadata": {
+                "Comment": 50.1 //Syntax Error
+            },
+            "Properties": {
+                "PolicyName": "EventBridgeRolePolicy",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "events:PutEvents",
+                            "Resource": {
+                                "Ref": "CentralEventBusArn"
+                            ] //Syntax Error
+                        }
+                    ]
+                },
+                "RoleName": {
+                    "Ref": "EventBridgeRole"
+                }
+            }
+        }
+    }
+}
