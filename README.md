@@ -22,7 +22,7 @@ An AI-powered Flask web application that scans and analyzes uploaded JSON config
 - Firebase Authentication
 - TensorFlow / Keras (for CNN)
 - FPDF (PDF generation)
-- SQLite (local user history database)
+- Firebase DB (local user history database)
 - HTML, CSS (Frontend)
 
 ---
